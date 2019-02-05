@@ -163,8 +163,3 @@ def update_cloudformation_stack(function_name):
         StackName=stackid,
         TemplateBody=template_body
     )
-
-def main():
-    update_cloudformation_file('template.json', 'HelloLambdaFunction')
-
-main()
