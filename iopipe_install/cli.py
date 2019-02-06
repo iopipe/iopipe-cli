@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from .update import * # relative import
+from . import update
 
 import click
 
