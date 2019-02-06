@@ -4,6 +4,7 @@ import collections
 import itertools
 import json
 
+from . import layers
 from .combine_dict import combine_dict
 
 AwsLambda = boto3.client('lambda')
@@ -35,6 +36,13 @@ RUNTIME_CONFIG = {
         'Handler': 'iopipe.handler'
     }
 }
+
+def get_region():
+    session = boto3.session.Session()
+    return session.region_name
+
+def get_layers(runtime):
+    return layers.list(get_region(), runtime)
 
 def list_functions():
     AwsLambda.list_functions()
