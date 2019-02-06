@@ -4,7 +4,7 @@ import collections
 import itertools
 import json
 
-from combine_dict import combine_dict
+from .combine_dict import combine_dict
 
 AwsLambda = boto3.client('lambda')
 CloudFormation = boto3.client('cloudformation')

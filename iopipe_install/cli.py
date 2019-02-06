@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import update # relative import
+from .update import * # relative import
 
 import click
 
@@ -46,6 +46,6 @@ def click_groups():
     cloudformation.add_command(cf_update_stack)
     cli.add_command(lambda_update_function)
 
-if __name__ == '__main__':
+def main():
     click_groups()
     cli()
