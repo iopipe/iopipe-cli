@@ -140,7 +140,7 @@ def modify_cloudformation(template_body, function_name):
     context = combine_dict(template_body, updates)
     return context
 
-def update_cloudformation_file(filename, function_name):
+def update_cloudformation_file(filename, function_name, output):
     # input options to support:
     # - cloudformation template file (json and yaml)
     # - cloudformation stack (deployed on AWS)
@@ -149,17 +149,19 @@ def update_cloudformation_file(filename, function_name):
     orig_template_body=""
     with open(filename) as yml:
         orig_template_body=json.loads(yml.read())
-    with open(filename+".1", 'w') as yml:
-        print("Modify Cloudformation output: ")
-        cf_template = modify_cloudformation(orig_template_body, function_name)
-        yml.write(json.dumps(cf_template, indent=2))
+    cf_template = modify_cloudformation(orig_template_body, function_name)
+    if output == "-":
+        print(json.dumps(cf_template, indent=2))
+    else:
+        with open(output, 'w') as yml:
+            yml.write(json.dumps(cf_template, indent=2))
 
-def update_cloudformation_stack(function_name):
-    stackid = get_stack_ids(function_name)
-    orig_template=get_template(stackid)
+def update_cloudformation_stack(stack_id, function_name):
+    #stackid = get_stack_ids(function_name)
+    orig_template=get_template(stack_id)
     template_body=modify_cloudformation(orig_template)
     # DOC update_stack: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudformation.html#CloudFormation.Client.update_stack
     CloudFormation.update_stack(
-        StackName=stackid,
+        StackName=stack_id,
         TemplateBody=template_body
     )
