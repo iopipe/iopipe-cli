@@ -39,11 +39,11 @@ RUNTIME_CONFIG = {
 def list_functions():
     AwsLambda.list_functions()
 
-def apply_function_api(func):
-    info = AwsLambda.get_function(FunctionName=func)
+def apply_function_api(function_name):
+    info = AwsLambda.get_function(FunctionName=function_name)
     runtime = info.get('Configuration', {}).get('Runtime', '')
     orig_handler = info.get('Configuration', {}).get('Handler', '')
-    new_handler = RUNTIME_CONFIG.get(runtime, {}).get('handler', '')
+    new_handler = RUNTIME_CONFIG.get(runtime, {}).get('Handler', None)
 
     if runtime == 'provider' or runtime not in RUNTIME_CONFIG.keys():
         print("Unsupported Lambda runtime: %s" % (runtime,))
@@ -51,6 +51,7 @@ def apply_function_api(func):
         print("Already configured.")
 
     AwsLambda.update_function_configuration(
+        FunctionName=function_name,
         Handler=new_handler,
         Environment={
             'Variables': {
