@@ -159,7 +159,7 @@ def update_cloudformation_file(filename, function_name, output):
 def update_cloudformation_stack(stack_id, function_name):
     #stackid = get_stack_ids(function_name)
     orig_template=get_template(stack_id)
-    template_body=modify_cloudformation(orig_template)
+    template_body=modify_cloudformation(orig_template, function_name)
     # DOC update_stack: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudformation.html#CloudFormation.Client.update_stack
     CloudFormation.update_stack(
         StackName=stack_id,
