@@ -47,7 +47,10 @@ def get_layers(runtime):
 def list_functions():
     AwsLambda.list_functions()
 
-def apply_function_api(function_name):
+def MultipleLayersException(Exception):
+    None
+
+def apply_function_api(function_name, layer_arn):
     info = AwsLambda.get_function(FunctionName=function_name)
     runtime = info.get('Configuration', {}).get('Runtime', '')
     orig_handler = info.get('Configuration', {}).get('Handler', '')
@@ -58,6 +61,20 @@ def apply_function_api(function_name):
     if orig_handler == new_handler:
         print("Already configured.")
 
+    iopipe_layers = []
+    if layer_arn:
+        iopipe_layers = [layer_arn]
+    else:
+        # compatible layers:
+        iopipe_layers = get_layers(runtime)
+        if len(iopipe_layers) > 1:
+            print("Discovered layers for runtime (%s)" % (runtime,))
+            for layer in iopipe_layers:
+                print("%s\t%s", (layer.LayerArn, layer.Description))
+            print ("Multiple layers found. Pass --layer-id to specify layer ARN")
+            raise MultipleLayersException()
+        existing_layers = info.get('Configuration', {}).get('Layers', [])
+
     AwsLambda.update_function_configuration(
         FunctionName=function_name,
         Handler=new_handler,
@@ -65,7 +82,8 @@ def apply_function_api(function_name):
             'Variables': {
                 'IOPIPE_HANDLER': orig_handler
             }
-        }
+        },
+        Layers=iopipe_layers + existing_layers
     )
 
 def get_stack_ids():
