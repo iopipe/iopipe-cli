@@ -47,7 +47,7 @@ def get_layers(runtime):
 def list_functions():
     AwsLambda.list_functions()
 
-def MultipleLayersException(Exception):
+class MultipleLayersException(Exception):
     None
 
 def apply_function_api(function_name, layer_arn):
