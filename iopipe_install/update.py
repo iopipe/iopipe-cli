@@ -58,20 +58,22 @@ def apply_function_api(function_arn, layer_arn):
 
     if runtime == 'provider' or runtime not in RUNTIME_CONFIG.keys():
         print("Unsupported Lambda runtime: %s" % (runtime,))
+        return
     if orig_handler == new_handler:
         print("Already configured.")
+        return
 
     iopipe_layers = []
+    existing_layers = []
     if layer_arn:
         iopipe_layers = [layer_arn]
     else:
         # compatible layers:
         iopipe_layers = get_layers(runtime)
-        if len(iopipe_layers) > 1:
+        if len(list(iopipe_layers)) > 1:
             print("Discovered layers for runtime (%s)" % (runtime,))
             for layer in iopipe_layers:
-                print("%s\t%s", (layer.LayerArn, layer.Description))
-            print ("Multiple layers found. Pass --layer-id to specify layer ARN")
+                print("%s\t%s" % (layer.get("LayerArn", ""), layer.get("Description", "")))
             raise MultipleLayersException()
         existing_layers = info.get('Configuration', {}).get('Layers', [])
 

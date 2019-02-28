@@ -39,7 +39,10 @@ def cf_update_stack(stack_id, function_arn):
 @click.option("--function-arn", required=True, help="Lambda Function name")
 @click.option("--layer-arn", help="Layer ARN for IOpipe library (default: auto-detect)")
 def lambda_update_function(function_arn, layer_arn):
-    update.apply_function_api(function_arn, layer_arn)
+    try:
+        update.apply_function_api(function_arn, layer_arn)
+    except update.MultipleLayersException:
+        None
 
 def click_groups():
     cli.add_command(cloudformation)

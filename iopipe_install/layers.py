@@ -3,4 +3,7 @@ import requests
 
 def list(region, runtime):
     req = requests.get("https://%s.layers.iopipe.com/get-layers?CompatibleRuntime=%s" % (region, runtime))
-    return json.loads(req.content).get("Layers", [])
+    layers_response = json.loads(req.content)
+    def get_arn(layer):
+        return layer.get("LatestMatchingVersion", {}).get("LayerVersionArn", None)
+    return map(get_arn, layers_response.get("Layers", []))
