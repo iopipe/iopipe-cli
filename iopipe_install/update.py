@@ -50,8 +50,8 @@ def list_functions():
 class MultipleLayersException(Exception):
     None
 
-def apply_function_api(function_name, layer_arn):
-    info = AwsLambda.get_function(FunctionName=function_name)
+def apply_function_api(function_arn, layer_arn):
+    info = AwsLambda.get_function(FunctionName=function_arn)
     runtime = info.get('Configuration', {}).get('Runtime', '')
     orig_handler = info.get('Configuration', {}).get('Handler', '')
     new_handler = RUNTIME_CONFIG.get(runtime, {}).get('Handler', None)
@@ -76,7 +76,7 @@ def apply_function_api(function_name, layer_arn):
         existing_layers = info.get('Configuration', {}).get('Layers', [])
 
     AwsLambda.update_function_configuration(
-        FunctionName=function_name,
+        FunctionName=function_arn,
         Handler=new_handler,
         Environment={
             'Variables': {
@@ -121,10 +121,10 @@ def get_template(stackid):
     #    '''
     return template_body #apply_function_cloudformation(template_body)
 
-def modify_cloudformation(template_body, function_name):
+def modify_cloudformation(template_body, function_arn):
     ##runtime = info.get('Configuration', {}).get('Runtime', '')
     ##orig_handler = info.get('Configuration', {}).get('Handler', '')
-    func_template = template_body.get('Resources', {}).get(function_name, {})
+    func_template = template_body.get('Resources', {}).get(function_arn, {})
     orig_handler = func_template.get('Properties', {}).get('Handler', None)
     runtime = func_template.get('Properties', {}).get('Runtime', None)
     new_handler = RUNTIME_CONFIG.get(runtime, {}).get('Handler', None)
@@ -138,7 +138,7 @@ def modify_cloudformation(template_body, function_name):
 
     updates = {
         'Resources': {
-            function_name: {
+            function_arn: {
                 'Properties': {
                     'Handler': new_handler
                 },
@@ -154,7 +154,7 @@ def modify_cloudformation(template_body, function_name):
     context = combine_dict(template_body, updates)
     return context
 
-def update_cloudformation_file(filename, function_name, output):
+def update_cloudformation_file(filename, function_arn, output):
     # input options to support:
     # - cloudformation template file (json and yaml)
     # - cloudformation stack (deployed on AWS)
@@ -163,17 +163,17 @@ def update_cloudformation_file(filename, function_name, output):
     orig_template_body=""
     with open(filename) as yml:
         orig_template_body=json.loads(yml.read())
-    cf_template = modify_cloudformation(orig_template_body, function_name)
+    cf_template = modify_cloudformation(orig_template_body, function_arn)
     if output == "-":
         print(json.dumps(cf_template, indent=2))
     else:
         with open(output, 'w') as yml:
             yml.write(json.dumps(cf_template, indent=2))
 
-def update_cloudformation_stack(stack_id, function_name):
-    #stackid = get_stack_ids(function_name)
+def update_cloudformation_stack(stack_id, function_arn):
+    #stackid = get_stack_ids(function_arn)
     orig_template=get_template(stack_id)
-    template_body=modify_cloudformation(orig_template, function_name)
+    template_body=modify_cloudformation(orig_template, function_arn)
     # DOC update_stack: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudformation.html#CloudFormation.Client.update_stack
     CloudFormation.update_stack(
         StackName=stack_id,
