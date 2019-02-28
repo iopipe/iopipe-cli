@@ -69,12 +69,13 @@ def apply_function_api(function_arn, layer_arn):
         iopipe_layers = [layer_arn]
     else:
         # compatible layers:
-        iopipe_layers = get_layers(runtime)
+        disco_layers = get_layers(runtime)
         if len(iopipe_layers) > 1:
             print("Discovered layers for runtime (%s)" % (runtime,))
-            for layer in iopipe_layers:
+            for layer in disco_layers:
                 print("%s\t%s" % (layer.get("LatestMatchingVersion", {}).get("LayerVersionArn", ""), layer.get("Description", "")))
             raise MultipleLayersException()
+        iopipe_layers = [ disco_layers[0].get("LatestMatchingVersion", {}).get("LayerVersionArn", "") ]
         existing_layers = info.get('Configuration', {}).get('Layers', [])
 
     AwsLambda.update_function_configuration(
