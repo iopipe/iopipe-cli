@@ -6,4 +6,4 @@ def list(region, runtime):
     layers_response = json.loads(req.content)
     def get_arn(layer):
         return layer.get("LatestMatchingVersion", {}).get("LayerVersionArn", None)
-    return map(get_arn, layers_response.get("Layers", []))
+    return list(map(get_arn, layers_response.get("Layers", [])))
