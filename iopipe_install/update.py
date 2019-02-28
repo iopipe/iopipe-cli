@@ -42,7 +42,7 @@ def get_region():
     return session.region_name
 
 def get_layers(runtime):
-    return layers.list(get_region(), runtime)
+    return layers.index(get_region(), runtime)
 
 def list_functions():
     AwsLambda.list_functions()
@@ -70,10 +70,10 @@ def apply_function_api(function_arn, layer_arn):
     else:
         # compatible layers:
         iopipe_layers = get_layers(runtime)
-        if len(list(iopipe_layers)) > 1:
+        if len(iopipe_layers) > 1:
             print("Discovered layers for runtime (%s)" % (runtime,))
             for layer in iopipe_layers:
-                print("%s\t%s" % (layer.get("LayerArn", ""), layer.get("Description", "")))
+                print("%s\t%s" % (layer.get("LatestMatchingVersion", {}).get("LayerVersionArn", ""), layer.get("Description", "")))
             raise MultipleLayersException()
         existing_layers = info.get('Configuration', {}).get('Layers', [])
 
