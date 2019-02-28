@@ -1,0 +1,10 @@
+{
+    "Resources": {
+        "RegionalCertificate": {
+            "Type" : "AWS::CertificateManager::Certificate",
+            "Properties" : {
+                "DomainName" : { "Fn::Sub": "${AWS::Region}.layers.iopipe.com" }
+            }
+        }
+    }
+  }
