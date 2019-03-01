@@ -2,6 +2,7 @@
 from . import update
 
 import boto3
+import botocore
 import click
 
 @click.group()
@@ -74,4 +75,9 @@ def click_groups():
 
 def main():
     click_groups()
-    cli()
+    try:
+        cli()
+    except botocore.exceptions.NoRegionError:
+        print("You must specify a region. Have you run `aws configure`?")
+    except botocore.exceptions.NoCredentialsError:
+        print("No AWS credentials configured. Have you run `aws configure`?")
