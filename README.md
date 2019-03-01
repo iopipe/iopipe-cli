@@ -6,7 +6,20 @@ for the AWS CLI.
 
 # Installation
 
-`python setup.py install`
+On your system CLI:
+`pip3 install git+https://github.com/iopipe/iopipe-install.git`
+
+# Configuration
+
+This tool assumes the AWS cli tool is configured correctly. Install and configure the AWS CLI as such:
+
+## Install the AWS CLI
+`pip3 install awscli --upgrade --user`
+
+## Run the configuration wizard
+`aws configure`
+
+Refer to the [AWS CLI User Guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html) for advanced configuration options and support for the aws cli tool.
 
 # Basic Usage
 
@@ -29,3 +42,19 @@ for the AWS CLI.
 ### modify a running CF stack
 
 `iopipe-install cloudformation update-stack`
+
+# Troubleshooting
+
+## Error: `botocore.exceptions.NoRegionError: You must specify a region.`
+
+The AWS cli tool is not configured for a region. You may run `aws configure` or set the environment variable `AWS_DEFAULT_REGION` on the cli.
+
+To set the env var on the cli:
+
+`export AWS_DEFAULT_REGION=us-east-1`
+
+## Error: `botocore.exceptions.NoCredentialsError: Unable to locate credentials`
+
+The AWS cli tool is not configured for an AWS account. You may run `aws configure` to configure your AWS environment.
+
+If you have multiple credential configurations in `$HOME/.aws/credentials`, but none is set as a default, you may specify a profile using `export AWS_PROFILE=<name>`.
