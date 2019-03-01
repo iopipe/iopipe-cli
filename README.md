@@ -25,23 +25,25 @@ Refer to the [AWS CLI User Guide](https://docs.aws.amazon.com/cli/latest/usergui
 
 ## Update deployed Lambda function
 
-`iopipe-install update-function --function-arn <name or arn>`
+`iopipe-install remote lambda-update --function-arn <name or arn>`
+
+Note that if your Lambda has been deployed by Cloudformation, this will cause stack drift. If drift is a consideraton for you, use the `iopipe-install remote stack-update` command instead.
 
 # Advanced usage
 
 ## Update deployed function /w specific layer
 
-`iopipe-install update-function --function-arn <name|arn> --layer-arn <arn>`
+`iopipe-install remote lambda-update --function-arn <name|arn> --layer-arn <arn>`
 
 ## Updating cloudformation (experimental)
 
 ### modify a CF yaml file
 
-`iopipe-install cloudformation update-template`
+`iopipe-install local template-update`
 
 ### modify a running CF stack
 
-`iopipe-install cloudformation update-stack`
+`iopipe-install remote stack-update`
 
 # Troubleshooting
 
