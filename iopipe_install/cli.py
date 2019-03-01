@@ -28,24 +28,24 @@ def remote():
 #cli.add_command(gosls)
 
 @click.command(name="template-update")
-@click.option("--template", default='template.json', help="Cloudformation JSON file.")
-@click.option("--function", required=True, help="Lambda Function name")
-@click.option("--output", default='-', help="Output file for modified template.")
-@click.option("--token", required=True, help="IOpipe Token")
+@click.option("--input", "-i", default='template.json', help="Cloudformation JSON file.")
+@click.option("--function", "-f", required=True, help="Lambda Function name")
+@click.option("--output", "-o", default='-', help="Output file for modified template.")
+@click.option("--token", "-t", envvar="IOPIPE_TOKEN", required=True, help="IOpipe Token")
 def cf_update_template(template, function, output, token):
     update.update_cloudformation_file(template, function, output, token)
 
 @click.command(name="stack-update")
-@click.option("--stack-id", required=True, help="Cloudformation Stack ID.")
-@click.option("--function", required=True, help="Lambda Function name")
-@click.option("--token", required=True, help="IOpipe Token")
+@click.option("--stack-id", "-s", required=True, help="Cloudformation Stack ID.")
+@click.option("--function", "-f", required=True, help="Lambda Function name")
+@click.option("--token", "-t", envvar="IOPIPE_TOKEN", required=True, help="IOpipe Token")
 def cf_update_stack(stack_id, function, token):
     update.update_cloudformation_stack(stack_id, function, token)
 
 @click.command(name="lambda-update")
-@click.option("--function", required=True, help="Lambda Function name")
-@click.option("--layer-arn", help="Layer ARN for IOpipe library (default: auto-detect)")
-@click.option("--token", required=True, help="IOpipe Token")
+@click.option("--function", "-f", required=True, help="Lambda Function name")
+@click.option("--layer-arn", "-l", help="Layer ARN for IOpipe library (default: auto-detect)")
+@click.option("--token", "-t", envvar="IOPIPE_TOKEN", required=True, help="IOpipe Token")
 def lambda_update_function(function, layer_arn, token):
     try:
         update.apply_function_api(function, layer_arn, token)
