@@ -53,13 +53,14 @@ def lambda_update_function(function_arn, layer_arn):
 def lambda_list_functions():
     AwsLambda = boto3.client('lambda')
     funcs = AwsLambda.list_functions().get("Functions", [])
+
+    print("Function Name\t\t\tRuntime\t\tInstrumented")
     for f in funcs:
         runtime = f.get("Runtime")
         new_handler = update.RUNTIME_CONFIG.get(runtime, {}).get('Handler', None)
         if f.get("Handler") == new_handler:
             f["-x-iopipe-enabled"] = True
-        print("Function Name\t\t\tRuntime\t\tInstrumented")
-        print("%s\t\t%s\t%s" % (f.get("FunctionName"), f.get("Runtime"), f.get("-x-iopipe-enabled")))
+        print("%s\t\t%s\t%s" % (f.get("FunctionName"), f.get("Runtime"), f.get("-x-iopipe-enabled", False)))
         
 
 def click_groups():
