@@ -7,6 +7,8 @@ setup(
     packages=find_packages(),
     install_requires=[
         'click',
+        'boto3',
+        'requests'
     ],
     entry_points='''
         [console_scripts]
