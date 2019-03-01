@@ -29,23 +29,26 @@ def remote():
 
 @click.command(name="template-update")
 @click.option("--template", default='template.json', help="Cloudformation JSON file.")
-@click.option("--function-arn", required=True, help="Lambda Function name")
+@click.option("--function", required=True, help="Lambda Function name")
 @click.option("--output", default='-', help="Output file for modified template.")
-def cf_update_template(template, function_arn, output):
-    update.update_cloudformation_file(template, function_arn, output)
+@click.option("--token", required=True, help="IOpipe Token")
+def cf_update_template(template, function, output, token):
+    update.update_cloudformation_file(template, function, output, token)
 
 @click.command(name="stack-update")
 @click.option("--stack-id", required=True, help="Cloudformation Stack ID.")
-@click.option("--function-arn", required=True, help="Lambda Function name")
-def cf_update_stack(stack_id, function_arn):
-    update.update_cloudformation_stack(stack_id, function_arn)
+@click.option("--function", required=True, help="Lambda Function name")
+@click.option("--token", required=True, help="IOpipe Token")
+def cf_update_stack(stack_id, function, token):
+    update.update_cloudformation_stack(stack_id, function, token)
 
 @click.command(name="lambda-update")
-@click.option("--function-arn", required=True, help="Lambda Function name")
+@click.option("--function", required=True, help="Lambda Function name")
 @click.option("--layer-arn", help="Layer ARN for IOpipe library (default: auto-detect)")
-def lambda_update_function(function_arn, layer_arn):
+@click.option("--token", required=True, help="IOpipe Token")
+def lambda_update_function(function, layer_arn, token):
     try:
-        update.apply_function_api(function_arn, layer_arn)
+        update.apply_function_api(function, layer_arn, token)
     except update.MultipleLayersException:
         print ("Multiple layers found. Pass --layer-arn to specify layer ARN")
         None

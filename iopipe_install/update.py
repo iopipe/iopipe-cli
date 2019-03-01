@@ -50,7 +50,7 @@ def list_functions():
 class MultipleLayersException(Exception):
     None
 
-def apply_function_api(function_arn, layer_arn):
+def apply_function_api(function_arn, layer_arn, token):
     info = AwsLambda.get_function(FunctionName=function_arn)
     runtime = info.get('Configuration', {}).get('Runtime', '')
     orig_handler = info.get('Configuration', {}).get('Handler', '')
@@ -83,7 +83,8 @@ def apply_function_api(function_arn, layer_arn):
         Handler=new_handler,
         Environment={
             'Variables': {
-                'IOPIPE_HANDLER': orig_handler
+                'IOPIPE_HANDLER': orig_handler,
+                'IOPIPE_TOKEN': token
             }
         },
         Layers=iopipe_layers + existing_layers
@@ -124,7 +125,7 @@ def get_template(stackid):
     #    '''
     return template_body #apply_function_cloudformation(template_body)
 
-def modify_cloudformation(template_body, function_arn):
+def modify_cloudformation(template_body, function_arn, token):
     ##runtime = info.get('Configuration', {}).get('Runtime', '')
     ##orig_handler = info.get('Configuration', {}).get('Handler', '')
     func_template = template_body.get('Resources', {}).get(function_arn, {})
@@ -147,7 +148,8 @@ def modify_cloudformation(template_body, function_arn):
                 },
                 'Environment': {
                     'Variables': {
-                        'IOPIPE_HANDLER': orig_handler
+                        'IOPIPE_HANDLER': orig_handler,
+                        'IOPIPE_TOKEN': token 
                     }
                 }
             }
@@ -157,7 +159,7 @@ def modify_cloudformation(template_body, function_arn):
     context = combine_dict(template_body, updates)
     return context
 
-def update_cloudformation_file(filename, function_arn, output):
+def update_cloudformation_file(filename, function_arn, output, token):
     # input options to support:
     # - cloudformation template file (json and yaml)
     # - cloudformation stack (deployed on AWS)
@@ -166,7 +168,7 @@ def update_cloudformation_file(filename, function_arn, output):
     orig_template_body=""
     with open(filename) as yml:
         orig_template_body=json.loads(yml.read())
-    cf_template = modify_cloudformation(orig_template_body, function_arn)
+    cf_template = modify_cloudformation(orig_template_body, function_arn, token)
     if output == "-":
         print(json.dumps(cf_template, indent=2))
     else:

@@ -25,7 +25,7 @@ Refer to the [AWS CLI User Guide](https://docs.aws.amazon.com/cli/latest/usergui
 
 ## Update deployed Lambda function
 
-`iopipe-install remote lambda-update --function-arn <name or arn>`
+`iopipe-install remote lambda-update --function <name or arn> --token <IOPIPE_TOKEN>`
 
 Note that if your Lambda has been deployed by Cloudformation, this will cause stack drift. If drift is a consideraton for you, use the `iopipe-install remote stack-update` command instead.
 
@@ -33,17 +33,17 @@ Note that if your Lambda has been deployed by Cloudformation, this will cause st
 
 ## Update deployed function /w specific layer
 
-`iopipe-install remote lambda-update --function-arn <name|arn> --layer-arn <arn>`
+`iopipe-install remote lambda-update --function <name|arn> --layer-arn <arn> --token <IOPIPE_TOKEN>`
 
 ## Updating cloudformation (experimental)
 
 ### modify a CF yaml file
 
-`iopipe-install local template-update`
+`iopipe-install local template-update --function <name|arn> --template <file> --token <IOPIPE_TOKEN>`
 
 ### modify a running CF stack
 
-`iopipe-install remote stack-update`
+`iopipe-install remote stack-update --function <name|arn> --stack-id <stack id> --token <IOPIPE_TOKEN>`
 
 # Troubleshooting
 
