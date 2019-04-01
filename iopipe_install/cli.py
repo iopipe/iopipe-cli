@@ -4,6 +4,7 @@ from . import update
 import boto3
 import botocore
 import click
+import shutil
 
 @click.group()
 def cli():
@@ -54,17 +55,32 @@ def lambda_update_function(function, layer_arn, token):
         None
 
 @click.command(name="list")
-def lambda_list_functions():
+@click.option("--quiet", "-q", help="Skip headers", is_flag=True)
+@click.option("--filter", "-f", help="Apply a filter to the list.", type=click.Choice(['all', 'installed', 'not-installed']))
+def lambda_list_functions(quiet, filter):
+    coltmpl = "{:<64}\t{:<12}\t{:>12}"
+    conscols, _ = shutil.get_terminal_size((80,24))
+    # set all if the filter is "all" or there is no filter active.
+    all = filter == "all" or not filter
+
     AwsLambda = boto3.client('lambda')
     funcs = AwsLambda.list_functions().get("Functions", [])
 
-    print("Function Name\t\t\tRuntime\t\tInstrumented")
+    if not quiet:
+        print(coltmpl.format("Function Name", "Runtime", "Installed"))
+        # ascii table limbo line ---
+        print(("{:-^%s}" % (str(conscols),)).format(""))
+
     for f in funcs:
         runtime = f.get("Runtime")
         new_handler = update.RUNTIME_CONFIG.get(runtime, {}).get('Handler', None)
         if f.get("Handler") == new_handler:
             f["-x-iopipe-enabled"] = True
-        print("%s\t\t%s\t%s" % (f.get("FunctionName"), f.get("Runtime"), f.get("-x-iopipe-enabled", False)))
+            if not all and filter != "installed":
+                continue
+        elif not all and filter == "installed":
+            continue
+        print(coltmpl.format(f.get("FunctionName"), f.get("Runtime"), f.get("-x-iopipe-enabled", False)))
         
 
 def click_groups():
