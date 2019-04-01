@@ -4,46 +4,39 @@ Applies the IOpipe layers to functions in your
 AWS account. Uses credentials as configured
 for the AWS CLI.
 
-# Installation
+# Installation & configuration
 
 On your system CLI:
-`pip3 install git+https://github.com/iopipe/iopipe-install.git`
 
-# Configuration
+```
+pip3 install git+https://github.com/iopipe/iopipe-install.git
+```
 
 This tool assumes the AWS cli tool is configured correctly. Install and configure the AWS CLI as such:
 
-## Install the AWS CLI
-`pip3 install awscli --upgrade --user`
+```
+pip3 install awscli --upgrade --user
+```
 
-## Run the configuration wizard
-`aws configure`
+Run the awscli configuration wizard:
+
+```
+aws configure
+```
 
 Refer to the [AWS CLI User Guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html) for advanced configuration options and support for the aws cli tool.
 
-# Basic Usage
+# Installing IOpipe with `iopipe-install`
 
-## Update deployed Lambda function
+The easiest way to update a function is to update it with
+the AWS Lambda API:
 
-`iopipe-install remote lambda-update --function <name or arn> --token <IOPIPE_TOKEN>`
+```
+iopipe-install lambda install --function <name or arn> --token <IOPIPE_TOKEN>
+```
 
-Note that if your Lambda has been deployed by Cloudformation, this will cause stack drift. If drift is a consideraton for you, use the `iopipe-install remote stack-update` command instead.
+If your Lambda has been deployed by Cloudformation, this method will cause stack drift.
 
-# Advanced usage
-
-## Update deployed function /w specific layer
-
-`iopipe-install remote lambda-update --function <name|arn> --layer-arn <arn> --token <IOPIPE_TOKEN>`
-
-## Updating cloudformation (experimental)
-
-### modify a CF yaml file
-
-`iopipe-install local template-update --function <name|arn> --template <file> --token <IOPIPE_TOKEN>`
-
-### modify a running CF stack
-
-`iopipe-install remote stack-update --function <name|arn> --stack-id <stack id> --token <IOPIPE_TOKEN>`
 
 # Troubleshooting
 
