@@ -4,7 +4,11 @@ from . import update
 import boto3
 import botocore
 import click
+import os
 import shutil
+
+IOPIPE_FF_CLOUDFORMATION = os.environ.get('IOPIPE_FF_CLOUDFORMATION')
+
 
 @click.group()
 def cli():
@@ -90,9 +94,10 @@ def lambda_list_functions(quiet, filter):
         
 
 def click_groups():
-    cli.add_command(stack)
-    stack.add_command(cf_update_template)
-    stack.add_command(cf_update_stack)
+    if IOPIPE_FF_CLOUDFORMATION:
+        cli.add_command(stack)
+        stack.add_command(cf_update_template)
+        stack.add_command(cf_update_stack)
 
     cli.add_command(lambda_group)
     lambda_group.add_command(lambda_list_functions)
