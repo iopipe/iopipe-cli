@@ -25,7 +25,7 @@ RUNTIME_CONFIG = {
         'Handler': 'node_modules/@iopipe/iopipe/handler'
     },
     'java8': {
-        'Handler': 'java.handler'
+        'Handler': 'com.iopipe.generic.GenericAWSRequestHandler'
     },
     'python2.7': {
         'Handler': 'iopipe.handler'
@@ -88,6 +88,7 @@ def apply_function_api(function_arn, layer_arn, token):
         Handler=new_handler,
         Environment={
             'Variables': {
+                'IOPIPE_GENERIC_HANDLER': orig_handler,
                 'IOPIPE_HANDLER': orig_handler,
                 'IOPIPE_TOKEN': token
             }
@@ -116,6 +117,10 @@ def remove_function_api(function_arn, layer_arn):
         return
     token = info.get('Configuration', {}).get('Environment', {}).get('Variables', {}).get('IOPIPE_TOKEN')
     del info['Configuration']['Environment']['Variables']['IOPIPE_HANDLER']
+    try:
+        del info['Configuration']['Environment']['Variables']['IOPIPE_GENERIC_HANDLER']
+    except KeyError:
+        pass
     try:
         del info['Configuration']['Environment']['Variables']['IOPIPE_TOKEN']
     except KeyError:
