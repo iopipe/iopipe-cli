@@ -35,6 +35,8 @@ the AWS Lambda API:
 iopipe-install lambda install --function <name or arn> --token <IOPIPE_TOKEN>
 ```
 
+The token may also be passed by the CLI's environment variable, `IOPIPE_TOKEN`.
+
 If your Lambda has been deployed by Cloudformation, this method will cause stack drift.
 
 
