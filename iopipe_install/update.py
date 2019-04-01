@@ -10,6 +10,7 @@ from .combine_dict import combine_dict
 AwsLambda = boto3.client('lambda')
 CloudFormation = boto3.client('cloudformation')
 
+IOPIPE_ARN_PREFIX_TEMPLATE = "arn:aws:lambda:%s:146318645305"
 RUNTIME_CONFIG = {
     'nodejs': {
         'Handler': 'node_modules/@iopipe/iopipe/handler'
@@ -36,6 +37,10 @@ RUNTIME_CONFIG = {
         'Handler': 'iopipe.handler'
     }
 }
+
+
+def get_arn_prefix():
+    return IOPIPE_ARN_PREFIX_TEMPLATE % (get_region(), )
 
 def get_region():
     session = boto3.session.Session()
@@ -88,6 +93,44 @@ def apply_function_api(function_arn, layer_arn, token):
             }
         },
         Layers=iopipe_layers + existing_layers
+    )
+
+def remove_function_api(function_arn, layer_arn):
+    info = AwsLambda.get_function(FunctionName=function_arn)
+    runtime = info.get('Configuration', {}).get('Runtime', '')
+    orig_handler = info.get('Configuration', {}).get('Handler', '')
+    new_handler = RUNTIME_CONFIG.get(runtime, {}).get('Handler', None)
+
+    if runtime == 'provider' or runtime not in RUNTIME_CONFIG.keys():
+        print("Unsupported Lambda runtime: %s" % (runtime,))
+        return
+    if orig_handler != new_handler:
+        print("IOpipe installation (via layers) not auto-detected for the specified function.")
+        print("Unrecognized handler in deployed function.")
+        return
+
+    env_handler = info.get('Configuration', {}).get('Environment', {}).get('Variables', {}).get('IOPIPE_HANDLER')
+    if not env_handler:
+        print("IOpipe installation (via layers) not auto-detected for the specified function.")
+        print("No IOPIPE_HANDLER environment variable found.")
+        return
+    token = info.get('Configuration', {}).get('Environment', {}).get('Variables', {}).get('IOPIPE_TOKEN')
+    del info['Configuration']['Environment']['Variables']['IOPIPE_HANDLER']
+    try:
+        del info['Configuration']['Environment']['Variables']['IOPIPE_TOKEN']
+    except KeyError:
+        pass
+
+    layers = info.get('Configuration', {}).get('Layers', [])
+    for layer_idx, layer_arn in enumerate(layers):
+        if layer_arn['Arn'].startswith(get_arn_prefix()):
+            del layers[layer_idx]
+
+    AwsLambda.update_function_configuration(
+        FunctionName=function_arn,
+        Handler=env_handler,
+        Environment=info['Configuration']['Environment'],
+        Layers=layers
     )
 
 def get_stack_ids():
