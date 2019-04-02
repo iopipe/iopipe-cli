@@ -68,15 +68,33 @@ def api_uninstall(function, layer_arn):
 @click.option("--quiet", "-q", help="Skip headers", is_flag=True)
 @click.option("--filter", "-f", help="Apply a filter to the list.", type=click.Choice(['all', 'installed', 'not-installed']))
 def lambda_list_functions(quiet, filter):
+    # this use of `filter` worries me as it's a keyword,
+    # but it actually works? Clickly doesn't give
+    # us enough control here to change the variable name? -Erica
+    buffer = []
+    _, consrows = shutil.get_terminal_size((80,50))
+    for idx, line in enumerate(list_functions(quiet, filter)):
+        buffer.append(line)
+
+        # If we've buffered as many lines as the height of the console,
+        # then start a pager and empty the buffer.
+        if idx > 0 and idx % consrows == 0:
+            click.echo_via_pager(iter(buffer))
+            buffer = []
+    # Print all lines on the last page.
+    for line in buffer:
+        click.echo(line)
+
+def list_functions(quiet, filter_choice):
     coltmpl = "{:<64}\t{:<12}\t{:>12}"
     conscols, consrows = shutil.get_terminal_size((80,50))
-    # set all if the filter is "all" or there is no filter active.
-    all = filter == "all" or not filter
+    # set all if the filter_choice is "all" or there is no filter_choice active.
+    all = filter_choice == "all" or not filter_choice
 
     if not quiet:
-        click.echo(coltmpl.format("Function Name", "Runtime", "Installed"))
+        yield coltmpl.format("Function Name", "Runtime", "Installed")
         # ascii table limbo line ---
-        click.echo(("{:-^%s}" % (str(conscols),)).format(""))
+        yield ("{:-^%s}" % (str(conscols),)).format("")
 
     AwsLambda = boto3.client('lambda')
     next_marker = None
@@ -93,11 +111,11 @@ def lambda_list_functions(quiet, filter):
             new_handler = update.RUNTIME_CONFIG.get(runtime, {}).get('Handler', None)
             if f.get("Handler") == new_handler:
                 f["-x-iopipe-enabled"] = True
-                if not all and filter != "installed":
+                if not all and filter_choice != "installed":
                     continue
-            elif not all and filter == "installed":
+            elif not all and filter_choice == "installed":
                 continue
-            click.echo(coltmpl.format(f.get("FunctionName"), f.get("Runtime"), f.get("-x-iopipe-enabled", False)))
+            yield coltmpl.format(f.get("FunctionName"), f.get("Runtime"), f.get("-x-iopipe-enabled", False))
 
         if not next_marker:
             break
