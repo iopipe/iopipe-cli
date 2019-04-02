@@ -69,29 +69,38 @@ def api_uninstall(function, layer_arn):
 @click.option("--filter", "-f", help="Apply a filter to the list.", type=click.Choice(['all', 'installed', 'not-installed']))
 def lambda_list_functions(quiet, filter):
     coltmpl = "{:<64}\t{:<12}\t{:>12}"
-    conscols, _ = shutil.get_terminal_size((80,24))
+    conscols, consrows = shutil.get_terminal_size((80,50))
     # set all if the filter is "all" or there is no filter active.
     all = filter == "all" or not filter
 
-    AwsLambda = boto3.client('lambda')
-    funcs = AwsLambda.list_functions().get("Functions", [])
-
     if not quiet:
-        print(coltmpl.format("Function Name", "Runtime", "Installed"))
+        click.echo(coltmpl.format("Function Name", "Runtime", "Installed"))
         # ascii table limbo line ---
-        print(("{:-^%s}" % (str(conscols),)).format(""))
+        click.echo(("{:-^%s}" % (str(conscols),)).format(""))
 
-    for f in funcs:
-        runtime = f.get("Runtime")
-        new_handler = update.RUNTIME_CONFIG.get(runtime, {}).get('Handler', None)
-        if f.get("Handler") == new_handler:
-            f["-x-iopipe-enabled"] = True
-            if not all and filter != "installed":
+    AwsLambda = boto3.client('lambda')
+    next_marker = None
+    while True:
+        list_func_args = {'MaxItems': consrows}
+        if next_marker:
+            list_func_args = {'Marker': next_marker, 'MaxItems': consrows}
+        func_resp = AwsLambda.list_functions(**list_func_args)
+        next_marker = func_resp.get("NextMarker", None)
+        funcs = func_resp.get("Functions", [])
+
+        for f in funcs:
+            runtime = f.get("Runtime")
+            new_handler = update.RUNTIME_CONFIG.get(runtime, {}).get('Handler', None)
+            if f.get("Handler") == new_handler:
+                f["-x-iopipe-enabled"] = True
+                if not all and filter != "installed":
+                    continue
+            elif not all and filter == "installed":
                 continue
-        elif not all and filter == "installed":
-            continue
-        print(coltmpl.format(f.get("FunctionName"), f.get("Runtime"), f.get("-x-iopipe-enabled", False)))
-        
+            click.echo(coltmpl.format(f.get("FunctionName"), f.get("Runtime"), f.get("-x-iopipe-enabled", False)))
+
+        if not next_marker:
+            break
 
 def click_groups():
     if IOPIPE_FF_CLOUDFORMATION:
